@@ -13,8 +13,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,7 +29,6 @@ import sv.edu.utec.etps1.registroincidencias.ui.theme.RegistroIncidenciasTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             RegistroIncidenciasTheme {
                 RegistroIncidenciasApp()
@@ -35,28 +39,69 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun RegistroIncidenciasApp() {
+    RegistroIncidenciaScreen()
+}
+
+@Composable
+fun RegistroIncidenciaScreen() {
+    var titulo by remember { mutableStateOf("") }
+    var descripcion by remember { mutableStateOf("") }
+    var mensaje by remember { mutableStateOf("Aun no hay reporte creado") }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start
     ) {
         Text(
-            text = "Clases Escorpiones Taekwondo",
+            text = "Registro de incidencia",
             style = MaterialTheme.typography.headlineMedium
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
         Text(
-            text = "Prototipo inicial — Unidad 1",
+            text = "Ingresa los detalles de la incidencia que deseas reportar",
             style = MaterialTheme.typography.bodyMedium
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
-            text = "Registra y da seguimiento a tus clases"
+        OutlinedTextField(
+            value = titulo,
+            onValueChange = { titulo = it },
+            label = { Text("Titulo") },
+            modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = descripcion,
+            onValueChange = { descripcion = it },
+            label = { Text("Descripcion") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp),
+            maxLines = 4
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = {
+                if (titulo.isNotEmpty()) {
+                    mensaje = "Reporte preparado: $titulo"
+                } else {
+                    mensaje = "Por favor ingresa un titulo"
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Crear reporte")
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -67,26 +112,17 @@ fun RegistroIncidenciasApp() {
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "Clases Programadas",
+                    text = "Estado",
                     style = MaterialTheme.typography.titleMedium
                 )
 
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Text(
-                    text = "Aún no hay clases programadas"
+                    text = mensaje,
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = {
-                // Se implementará en una unidad posterior
-            }
-        ) {
-            Text(
-                text = "Registrar Clase"
-            )
         }
     }
 }
