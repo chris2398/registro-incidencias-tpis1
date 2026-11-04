@@ -6,6 +6,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -22,13 +23,42 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
+
+    private val tag = "TPIS1_LIFECYCLE"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(tag, "onCreate ejecutado")
         setContent {
             MaterialTheme {
                 PantallaRegistroIncidencia()
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d(tag, "onStart ejecutado")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d(tag, "onResume ejecutado")
+    }
+
+    override fun onPause() {
+        Log.d(tag, "onPause ejecutado")
+        super.onPause()
+    }
+
+    override fun onStop() {
+        Log.d(tag, "onStop ejecutado")
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        Log.d(tag, "onDestroy ejecutado")
+        super.onDestroy()
     }
 }
 
@@ -52,7 +82,7 @@ fun PantallaRegistroIncidencia() {
     val lightSensor = remember { sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) }
     val proximitySensor = remember { sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) }
 
-    // Control del ciclo de vida y registro seguro de los sensores
+    // Control del ciclo de vida del sensor con DisposableEffect
     DisposableEffect(Unit) {
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
@@ -96,7 +126,7 @@ fun PantallaRegistroIncidencia() {
             style = MaterialTheme.typography.headlineMedium
         )
 
-        // 1. Campo con teclado contextual (Semana 10)
+        // Entrada de texto con teclado contextual
         OutlinedTextField(
             value = titulo,
             onValueChange = { titulo = it },
@@ -108,7 +138,7 @@ fun PantallaRegistroIncidencia() {
             modifier = Modifier.fillMaxWidth()
         )
 
-        // 2. Interacción táctil de selección (Semana 10)
+        // Interacción táctil de selección
         Text(
             text = "Categoría seleccionada: $categoria",
             style = MaterialTheme.typography.titleMedium
@@ -141,13 +171,12 @@ fun PantallaRegistroIncidencia() {
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // 3. TABLERO DE DIAGNÓSTICO DEL DISPOSITIVO (Semana 12)
+        // Diagnóstico de sensores del dispositivo
         Text(
             text = "Diagnóstico del Dispositivo",
             style = MaterialTheme.typography.titleLarge
         )
 
-        // Tarjeta Acelerómetro
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
             modifier = Modifier.fillMaxWidth()
@@ -165,50 +194,6 @@ fun PantallaRegistroIncidencia() {
                         "Interpretación: Dispositivo estable"
                     }
                     Text(text = estadoMovimiento, color = MaterialTheme.colorScheme.primary)
-                }
-            }
-        }
-
-        // Tarjeta Sensor de Luz
-        Card(
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                Text("Sensor: Luz Ambiental", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(4.dp))
-                if (lightSensor == null) {
-                    Text("Estado: No disponible en este dispositivo.")
-                } else {
-                    Text("Iluminación: %.1f lux".format(lightValue))
-                    val estadoLuz = when {
-                        lightValue > 5000f -> "Interpretación: Ambiente muy iluminado / Luz solar"
-                        lightValue > 500f -> "Interpretación: Iluminación de oficina / interiores"
-                        else -> "Interpretación: Ambiente oscuro"
-                    }
-                    Text(text = estadoLuz, color = MaterialTheme.colorScheme.primary)
-                }
-            }
-        }
-
-        // Tarjeta Sensor de Proximidad
-        Card(
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                Text("Sensor: Proximidad", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(4.dp))
-                if (proximitySensor == null) {
-                    Text("Estado: No disponible en este dispositivo.")
-                } else {
-                    Text("Distancia: %.1f cm".format(proximityValue))
-                    val estadoProximidad = if (proximityValue < (proximitySensor.maximumRange)) {
-                        "Interpretación: Objeto cercano / En bolsillo"
-                    } else {
-                        "Interpretación: Sin obstáculos cercanos"
-                    }
-                    Text(text = estadoProximidad, color = MaterialTheme.colorScheme.primary)
                 }
             }
         }
