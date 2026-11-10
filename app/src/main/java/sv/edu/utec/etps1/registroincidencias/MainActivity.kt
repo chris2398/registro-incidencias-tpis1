@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
@@ -64,10 +65,11 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun PantallaRegistroIncidencia() {
-    var titulo by remember { mutableStateOf("") }
+    // Semana 15: rememberSaveable para conservar el texto ante rotaciones o recreaciones
+    var titulo by rememberSaveable { mutableStateOf("") }
     var categoria by remember { mutableStateOf("Técnica") }
 
-    // Estados para los sensores
+    // Estados para los sensores (Semanas 11 y 12)
     var sensorX by remember { mutableStateOf(0f) }
     var sensorY by remember { mutableStateOf(0f) }
     var sensorZ by remember { mutableStateOf(0f) }
@@ -82,7 +84,7 @@ fun PantallaRegistroIncidencia() {
     val lightSensor = remember { sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) }
     val proximitySensor = remember { sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) }
 
-    // Control del ciclo de vida del sensor con DisposableEffect
+    // Control del ciclo de vida y registro seguro de los sensores mediante DisposableEffect
     DisposableEffect(Unit) {
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
@@ -126,7 +128,7 @@ fun PantallaRegistroIncidencia() {
             style = MaterialTheme.typography.headlineMedium
         )
 
-        // Entrada de texto con teclado contextual
+        // 1. Campo de texto con teclado contextual (Semana 10) y persistencia (Semana 15)
         OutlinedTextField(
             value = titulo,
             onValueChange = { titulo = it },
@@ -138,7 +140,7 @@ fun PantallaRegistroIncidencia() {
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Interacción táctil de selección
+        // 2. Interacción táctil de selección de categoría (Semana 10)
         Text(
             text = "Categoría seleccionada: $categoria",
             style = MaterialTheme.typography.titleMedium
@@ -171,12 +173,13 @@ fun PantallaRegistroIncidencia() {
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Diagnóstico de sensores del dispositivo
+        // 3. Tablero de Diagnóstico de Sensores (Semanas 11 y 12)
         Text(
             text = "Diagnóstico del Dispositivo",
             style = MaterialTheme.typography.titleLarge
         )
 
+        // Tarjeta Acelerómetro
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
             modifier = Modifier.fillMaxWidth()
@@ -194,6 +197,50 @@ fun PantallaRegistroIncidencia() {
                         "Interpretación: Dispositivo estable"
                     }
                     Text(text = estadoMovimiento, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+        }
+
+        // Tarjeta Sensor de Luz
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Text("Sensor: Luz Ambiental", style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(4.dp))
+                if (lightSensor == null) {
+                    Text("Estado: No disponible en este dispositivo.")
+                } else {
+                    Text("Iluminación: %.1f lux".format(lightValue))
+                    val estadoLuz = when {
+                        lightValue > 5000f -> "Interpretación: Ambiente muy iluminado / Luz solar"
+                        lightValue > 500f -> "Interpretación: Iluminación de oficina / interiores"
+                        else -> "Interpretación: Ambiente oscuro"
+                    }
+                    Text(text = estadoLuz, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+        }
+
+        // Tarjeta Sensor de Proximidad
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Text("Sensor: Proximidad", style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(4.dp))
+                if (proximitySensor == null) {
+                    Text("Estado: No disponible en este dispositivo.")
+                } else {
+                    Text("Distancia: %.1f cm".format(proximityValue))
+                    val estadoProximidad = if (proximityValue < (proximitySensor.maximumRange)) {
+                        "Interpretación: Objeto cercano / En bolsillo"
+                    } else {
+                        "Interpretación: Sin obstáculos cercanos"
+                    }
+                    Text(text = estadoProximidad, color = MaterialTheme.colorScheme.primary)
                 }
             }
         }
